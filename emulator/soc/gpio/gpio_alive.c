@@ -23,12 +23,17 @@
 
 #include <fireplace/soc/gpio/gpio_alive.h>
 #include <fireplace/soc/gpio/exynos_gpio.h>
+#include <fireplace/soc/hardware_buttons/hardware_buttons.h>
+
+pthread_mutex_t gpio_alive_lock = PTHREAD_MUTEX_INITIALIZER;
+
+struct exynos_gpio_bank *bank_volume = (struct exynos_gpio_bank *)EXYNOS9830_GPA0CON;
+struct exynos_gpio_bank *bank_power = (struct exynos_gpio_bank *)EXYNOS9830_GPA2CON;
+
+int keys[3] = {1, 1, 1};
 
 int gpio_alive_init(struct uc_struct *uc_s)
 {
-	struct exynos_gpio_bank *bank_volume = (struct exynos_gpio_bank *)EXYNOS9830_GPA0CON;
-	struct exynos_gpio_bank *bank_power = (struct exynos_gpio_bank *)EXYNOS9830_GPA2CON;
-
 	printf("= gpio_alive_init\n");
 	printf("= initializing button pins...\n");
 
@@ -53,5 +58,14 @@ int gpio_alive_init(struct uc_struct *uc_s)
 
 void gpio_alive_hook(uc_engine *uc, uc_mem_type type, uint64_t address, int size, int64_t value, void *user_data)
 {
+	pthread_mutex_lock(&gpio_alive_lock);
 
+	if(type == UC_MEM_READ)
+	{
+		exynos_gpio_set_value(uc, bank_volume, 3, keys[VOL_UP]);
+		exynos_gpio_set_value(uc, bank_volume, 4, keys[VOL_DOWN]);
+		exynos_gpio_set_value(uc, bank_power, 3, keys[POWER]);
+	}
+
+	pthread_mutex_unlock(&gpio_alive_lock);
 }

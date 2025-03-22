@@ -51,6 +51,7 @@
 #include <fireplace/gui/gui.h>
 #include <fireplace/soc/fb/fb.h>
 #include <fireplace/soc/uart/uart.h>
+#include <fireplace/soc/hardware_buttons/hardware_buttons.h>
 
 #define RESOLUTION_SCALE (0.4)
 #define WINDOW_WIDTH (1440 * RESOLUTION_SCALE)
@@ -129,6 +130,39 @@ void blit_uart_window(struct nk_context *ctx)
 
 		// This is the worst shit i've ever written
 		nk_window_set_scroll(ctx, 0, (line * 27));
+	}
+
+	nk_end(ctx);
+}
+
+void blit_hardware_button_window(struct nk_context *ctx)
+{
+	state emuState = 0;
+
+	emuState = atomic_load(&sharedState);
+
+	if(nk_begin(ctx, "Hardware Button Control", nk_rect(25, 25, 321, 83),
+		    NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_MOVABLE | NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE))
+	{
+		nk_layout_row_static(ctx, 40, 100, 3);
+
+		if (nk_button_label(ctx, "Power"))
+		{
+			if(emuState == STATE_RUNNING)
+				trigger_key(POWER);
+		}
+
+		if (nk_button_label(ctx, "Volume Up"))
+		{
+			if(emuState == STATE_RUNNING)
+				trigger_key(VOL_UP);
+		}
+
+		if (nk_button_label(ctx, "Volume Down"))
+		{
+			if(emuState == STATE_RUNNING)
+				trigger_key(VOL_DOWN);
+		}
 	}
 
 	nk_end(ctx);
@@ -225,6 +259,7 @@ void *gui_core(void *dummy)
 
 		blit_window(ctx);
 		blit_uart_window(ctx);
+		blit_hardware_button_window(ctx);
 
 		render_ogl(win, win_height, win_width);
 	}
