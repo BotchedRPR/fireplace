@@ -18,11 +18,13 @@
 
 #include <fireplace/soc/peripherals.h>
 #include <fireplace/soc/fb/fb.h>
+#include <fireplace/soc/gpio/gpio_alive.h>
 #include <fireplace/soc/uart/uart.h>
 #include <fireplace/soc/usb/usb.h>
 
 struct peripheral exynos990_peripherals[] = {
 	{"uart", true, 0x10540000, 0x1000, uart_init, uart_hook},
+	{"gpio_alive", true, 0x15850000, 0x1000, gpio_alive_init, gpio_alive_hook},
 	//{"usb_phy", true, USB_PHY_BASE, 0x100, usb_phy_init, usb_phy_hook},
 	//{"usb", true, USB_DWC_BASE, 0x200000, usb_init, usb_hook},
 	// TODO: Platforms with 1080p displays
