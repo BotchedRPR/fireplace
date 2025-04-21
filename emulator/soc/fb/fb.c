@@ -35,6 +35,24 @@ unsigned char framebuffer[FB_SIZE] = "\x0";
 void fb_hook(uc_engine *uc, uc_mem_type type, uint64_t address, int size, int64_t value, void *user_data)
 {
 	pthread_mutex_lock(&fb_lock);
-	framebuffer[address - FB_ADDRESS] = value;
+
+	size_t offset = address - FB_ADDRESS;
+
+	if (offset % 4 == 0)
+	{
+		offset -= 4;
+
+		// Convert from BGRA to RGBA
+		uint8_t b = (value) & 0xFF;
+		uint8_t g = (value >> 8) & 0xFF;
+		uint8_t r = (value >> 16) & 0xFF;
+		uint8_t a = (value >> 24) & 0xFF;
+
+		framebuffer[offset + 0] = r;
+		framebuffer[offset + 1] = g;
+		framebuffer[offset + 2] = b;
+		framebuffer[offset + 3] = a;
+	}
+
 	pthread_mutex_unlock(&fb_lock);
 }
